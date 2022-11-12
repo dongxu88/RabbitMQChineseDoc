@@ -100,11 +100,30 @@ factory.setUri("amqp://userName:password@hostName:portNumber/virtualHost");
 Connection conn = factory.newConnection("app:audit component:event-consumer");
 ```
 
-使用交换器和队列
+## 使用交换器和队列
 
-客户端应用使用队列和交换器来工作。
+交换器和队列是RabbitMQ高层协议的基石，客户端应用都需要和他们协同工作。交换器和队列在使用前必须被声明和创建好。
 
+下面示例声明一个交换器和一个服务端命名的队列，并将他们按照指定的路由键绑定到一起：
 
+```java
+channel.exchangeDeclare(exchangeName, "direct", true);
+String queueName = channel.queueDeclare().getQueue();
+channel.queueBind(queueName, exchangeName, routingKey);
+```
 
+这会声明如下的两个对象：
 
+- 一个持久的、不会自动删除的、direct类型交换器
+- 一个非持久化的、独享的、自动删除的、名字是自动生成的队列
+
+声明一个自定义名称的队列：
+
+```java
+channel.exchangeDeclare(exchangeName, "direct", true);
+channel.queueDeclare(queueName, true, false, false, null);
+channel.queueBind(queueName, exchangeName, routingKey);
+```
+
+Channel有很多声明方法都是重载的。这些形式较短的方法都使用了合理的默认值。同时也提供了很多较长形式的函数，这些函数参数较多，可以在必须情况下用来覆盖默认值。
 
